@@ -16,9 +16,11 @@
 
 package im.vector.app.core.extensions
 
+import android.os.Build
 import android.text.Editable
 import android.view.View
 import android.view.inputmethod.EditorInfo
+import androidx.autofill.HintConstants
 import com.google.android.material.textfield.TextInputLayout
 import im.vector.app.core.platform.SimpleTextWatcher
 import kotlinx.coroutines.flow.map
@@ -57,3 +59,14 @@ fun TextInputLayout.setOnImeDoneListener(action: () -> Unit) {
         }
     }
 }
+
+fun TextInputLayout.autofillPhoneNumber() = setAutofillHint(HintConstants.AUTOFILL_HINT_PHONE_NUMBER)
+fun TextInputLayout.autofillEmail() = setAutofillHint(HintConstants.AUTOFILL_HINT_EMAIL_ADDRESS)
+
+private fun TextInputLayout.setAutofillHint(hintType: String) {
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+        setAutofillHints(hintType)
+    }
+}
+
+
