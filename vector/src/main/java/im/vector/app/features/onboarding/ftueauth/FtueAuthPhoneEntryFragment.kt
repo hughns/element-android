@@ -16,19 +16,17 @@
 
 package im.vector.app.features.onboarding.ftueauth
 
-import android.os.Build
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.autofill.HintConstants
 import androidx.lifecycle.lifecycleScope
 import im.vector.app.core.extensions.associateContentStateWith
 import im.vector.app.core.extensions.content
 import im.vector.app.core.extensions.editText
 import im.vector.app.core.extensions.isEmail
 import im.vector.app.core.extensions.setOnImeDoneListener
-import im.vector.app.databinding.FragmentFtuePhoneInputBinding
+import im.vector.app.databinding.FragmentFtueEmailInputBinding
 import im.vector.app.features.onboarding.OnboardingAction
 import im.vector.app.features.onboarding.RegisterAction
 import kotlinx.coroutines.flow.launchIn
@@ -37,10 +35,10 @@ import org.matrix.android.sdk.api.auth.registration.RegisterThreePid
 import reactivecircus.flowbinding.android.widget.textChanges
 import javax.inject.Inject
 
-class FtueAuthEmailEntryFragment @Inject constructor() : AbstractFtueAuthFragment<FragmentFtuePhoneInputBinding>() {
+class FtueAuthPhoneEntryFragment @Inject constructor() : AbstractFtueAuthFragment<FragmentFtueEmailInputBinding>() {
 
-    override fun getBinding(inflater: LayoutInflater, container: ViewGroup?): FragmentFtuePhoneInputBinding {
-        return FragmentFtuePhoneInputBinding.inflate(inflater, container, false)
+    override fun getBinding(inflater: LayoutInflater, container: ViewGroup?): FragmentFtueEmailInputBinding {
+        return FragmentFtueEmailInputBinding.inflate(inflater, container, false)
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -59,13 +57,6 @@ class FtueAuthEmailEntryFragment @Inject constructor() : AbstractFtueAuthFragmen
                     views.emailEntrySubmit.isEnabled = it.isEmail()
                 }
                 .launchIn(viewLifecycleOwner.lifecycleScope)
-        setupAutoFill()
-    }
-
-    private fun setupAutoFill() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            views.emailEntryInput.setAutofillHints(HintConstants.AUTOFILL_HINT_PHONE_NUMBER)
-        }
     }
 
     private fun updateEmail() {
