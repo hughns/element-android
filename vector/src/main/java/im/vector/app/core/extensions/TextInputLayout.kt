@@ -68,5 +68,3 @@ private fun TextInputLayout.setAutofillHint(hintType: String) {
         setAutofillHints(hintType)
     }
 }
-
-
