@@ -124,6 +124,9 @@ class DebugMenuActivity : VectorBaseActivity<ActivityDebugMenuBinding>() {
         views.debugPermission.setOnClickListener {
             startActivity(Intent(this, DebugPermissionActivity::class.java))
         }
+        views.debugJitsi.setOnClickListener {
+            startActivity(Intent(this, DebugJitsiActivity::class.java))
+        }
     }
 
     private fun openPrivateSettings() {
