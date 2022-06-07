@@ -489,7 +489,7 @@ class OnboardingViewModelTest {
                             copy(isLoading = false, resetState = resetState)
                         }
                 )
-                .assertEvents(OnboardingViewEvents.OnResetPasswordSendThreePidDone)
+                .assertEvents(OnboardingViewEvents.OnResetPasswordSendThreePidDone(AN_EMAIL))
                 .finish()
     }
 

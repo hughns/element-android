@@ -150,10 +150,7 @@ class OnboardingViewModel @AssistedInject constructor(
             is OnboardingAction.WebLoginSuccess            -> handleWebLoginSuccess(action)
             is OnboardingAction.ResetPassword              -> handleResetPassword(action)
             OnboardingAction.ResendResetPassword           -> handleResendResetPassword()
-            is OnboardingAction.ConfirmNewPassword         -> {
-                setState { copy(resetState = resetState.copy(newPassword = action.newPassword)) }
-                handleResetPasswordMailConfirmed()
-            }
+            is OnboardingAction.ConfirmNewPassword         -> handleResetPasswordConfirmed(action)
             is OnboardingAction.ResetPasswordMailConfirmed -> handleResetPasswordMailConfirmed()
             is OnboardingAction.PostRegisterAction         -> handleRegisterAction(action.registerAction, ::emitFlowResultViewEvent)
             is OnboardingAction.ResetAction                -> handleResetAction(action)
@@ -461,10 +458,7 @@ class OnboardingViewModel @AssistedInject constructor(
         withState { state ->
             val resetState = state.resetState
             when (resetState.email) {
-                null -> {
-                    setState { copy(isLoading = false) }
-                    _viewEvents.post(OnboardingViewEvents.Failure(IllegalStateException("Developer error - No reset email has been set")))
-                }
+                null -> _viewEvents.post(OnboardingViewEvents.Failure(IllegalStateException("Developer error - No reset email has been set")))
                 else -> {
                     startResetPasswordFlow(resetState.email) {
                         setState { copy(isLoading = false) }
@@ -488,6 +482,13 @@ class OnboardingViewModel @AssistedInject constructor(
         }
     }
 
+    private fun handleResetPasswordConfirmed(action: OnboardingAction.ConfirmNewPassword) {
+        setState { copy(isLoading = true) }
+        currentJob = viewModelScope.launch {
+            confirmPasswordReset(action.newPassword, action.signOutAllDevices)
+        }
+    }
+
     private fun handleResetPasswordMailConfirmed() {
         setState { copy(isLoading = true) }
         currentJob = viewModelScope.launch {
@@ -497,25 +498,22 @@ class OnboardingViewModel @AssistedInject constructor(
                     setState { copy(isLoading = false) }
                     _viewEvents.post(OnboardingViewEvents.Failure(IllegalStateException("Developer error - No new password has been set")))
                 }
-                else -> {
-                    runCatching { loginWizard.resetPasswordMailConfirmed(newPassword) }.fold(
-                            onSuccess = {
-                                setState {
-                                    copy(
-                                            isLoading = false,
-                                            resetState = ResetState()
-                                    )
-                                }
-                                _viewEvents.post(OnboardingViewEvents.OnResetPasswordMailConfirmationSuccess)
-                            },
-                            onFailure = {
-                                setState { copy(isLoading = false) }
-                                _viewEvents.post(OnboardingViewEvents.Failure(it))
-                            }
-                    )
-                }
+                else -> confirmPasswordReset(newPassword, logoutAllDevices = true)
             }
         }
+    }
+
+    private suspend fun confirmPasswordReset(newPassword: String, logoutAllDevices: Boolean) {
+        runCatching { loginWizard.resetPasswordMailConfirmed(newPassword, logoutAllDevices = logoutAllDevices) }.fold(
+                onSuccess = {
+                    setState { copy(isLoading = false, resetState = ResetState()) }
+                    _viewEvents.post(OnboardingViewEvents.OnResetPasswordMailConfirmationSuccess)
+                },
+                onFailure = {
+                    setState { copy(isLoading = false) }
+                    _viewEvents.post(OnboardingViewEvents.Failure(it))
+                }
+        )
     }
 
     private fun handleDirectLogin(action: AuthenticateAction.LoginDirect, homeServerConnectionConfig: HomeServerConnectionConfig?) {
