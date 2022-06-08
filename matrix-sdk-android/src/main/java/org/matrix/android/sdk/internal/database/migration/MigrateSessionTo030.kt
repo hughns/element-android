@@ -21,10 +21,6 @@ import org.matrix.android.sdk.internal.database.model.HomeServerCapabilitiesEnti
 import org.matrix.android.sdk.internal.extensions.forceRefreshOfHomeServerCapabilities
 import org.matrix.android.sdk.internal.util.database.RealmMigrator
 
-/**
- * Migrating to:
- * Live location sharing aggregated summary: adding new field userId.
- */
 internal class MigrateSessionTo030(realm: DynamicRealm) : RealmMigrator(realm, 30) {
 
     override fun doMigrate(realm: DynamicRealm) {
