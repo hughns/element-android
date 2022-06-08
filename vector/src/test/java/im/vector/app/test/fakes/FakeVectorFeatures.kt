@@ -26,4 +26,12 @@ class FakeVectorFeatures : VectorFeatures by spyk<DefaultVectorFeatures>() {
     fun givenPersonalisationEnabled() {
         every { isOnboardingPersonalizeEnabled() } returns true
     }
+
+    fun givenCombinedLoginEnabled() {
+        every { isOnboardingCombinedLoginEnabled() } returns true
+    }
+
+    fun givenCombinedLoginDisabled() {
+        every { isOnboardingCombinedLoginEnabled() } returns false
+    }
 }

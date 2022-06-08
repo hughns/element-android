@@ -444,7 +444,7 @@ class OnboardingViewModel @AssistedInject constructor(
     private fun handleResetPassword(action: OnboardingAction.ResetPassword) {
         startResetPasswordFlow(action.email) {
             setState { copy(isLoading = false, resetState = createResetState(action, selectedHomeserver)) }
-            _viewEvents.post(OnboardingViewEvents.OnResetPasswordSendThreePidDone(action.email))
+            _viewEvents.post(OnboardingViewEvents.OnResetPasswordEmailConfirmationSent(action.email))
         }
     }
 
@@ -507,7 +507,11 @@ class OnboardingViewModel @AssistedInject constructor(
         runCatching { loginWizard.resetPasswordMailConfirmed(newPassword, logoutAllDevices = logoutAllDevices) }.fold(
                 onSuccess = {
                     setState { copy(isLoading = false, resetState = ResetState()) }
-                    _viewEvents.post(OnboardingViewEvents.OnResetPasswordMailConfirmationSuccess)
+                    val nextEvent = when {
+                        vectorFeatures.isOnboardingCombinedLoginEnabled() -> OnboardingViewEvents.OnResetPasswordComplete
+                        else                                              -> OnboardingViewEvents.OpenResetPasswordComplete
+                    }
+                    _viewEvents.post(nextEvent)
                 },
                 onFailure = {
                     setState { copy(isLoading = false) }
