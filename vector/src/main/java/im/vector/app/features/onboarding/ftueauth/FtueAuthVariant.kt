@@ -128,10 +128,10 @@ class FtueAuthVariant(
 
     private fun handleOnboardingViewEvents(viewEvents: OnboardingViewEvents) {
         when (viewEvents) {
-            is OnboardingViewEvents.RegistrationFlowResult                     -> {
+            is OnboardingViewEvents.RegistrationFlowResult               -> {
                 onRegistrationFlow(viewEvents)
             }
-            is OnboardingViewEvents.OutdatedHomeserver                         -> {
+            is OnboardingViewEvents.OutdatedHomeserver                   -> {
                 MaterialAlertDialogBuilder(activity)
                         .setTitle(R.string.login_error_outdated_homeserver_title)
                         .setMessage(R.string.login_error_outdated_homeserver_warning_content)
@@ -139,7 +139,7 @@ class FtueAuthVariant(
                         .show()
                 Unit
             }
-            is OnboardingViewEvents.OpenServerSelection                        ->
+            is OnboardingViewEvents.OpenServerSelection                  ->
                 activity.addFragmentToBackstack(views.loginFragmentContainer,
                         FtueAuthServerSelectionFragment::class.java,
                         option = { ft ->
@@ -154,15 +154,15 @@ class FtueAuthVariant(
                                 // findViewById<View?>(R.id.loginSplashSubmit)?.let { ft.addSharedElement(it, ViewCompat.getTransitionName(it) ?: "") }
                             }
                         })
-            is OnboardingViewEvents.OnServerSelectionDone                      -> onServerSelectionDone(viewEvents)
-            is OnboardingViewEvents.OnSignModeSelected                         -> onSignModeSelected(viewEvents)
-            is OnboardingViewEvents.OnLoginFlowRetrieved                       ->
+            is OnboardingViewEvents.OnServerSelectionDone                -> onServerSelectionDone(viewEvents)
+            is OnboardingViewEvents.OnSignModeSelected                   -> onSignModeSelected(viewEvents)
+            is OnboardingViewEvents.OnLoginFlowRetrieved                 ->
                 activity.addFragmentToBackstack(
                         views.loginFragmentContainer,
                         FtueAuthSignUpSignInSelectionFragment::class.java,
                         option = commonOption
                 )
-            is OnboardingViewEvents.OnWebLoginError                            -> onWebLoginError(viewEvents)
+            is OnboardingViewEvents.OnWebLoginError                      -> onWebLoginError(viewEvents)
             is OnboardingViewEvents.OnForgetPasswordClicked              ->
                 when {
                     vectorFeatures.isOnboardingCombinedLoginEnabled() -> addLoginStageFragmentToBackstack(FtueAuthResetPasswordEmailEntryFragment::class.java)
@@ -180,7 +180,7 @@ class FtueAuthVariant(
                     )
                 }
             }
-            OnboardingViewEvents.OnResetPasswordBreakerConfirmed -> {
+            OnboardingViewEvents.OnResetPasswordBreakerConfirmed         -> {
                 supportFragmentManager.popBackStack(FRAGMENT_LOGIN_TAG, FragmentManager.POP_BACK_STACK_INCLUSIVE)
                 activity.addFragmentToBackstack(
                         views.loginFragmentContainer,
@@ -188,17 +188,17 @@ class FtueAuthVariant(
                         option = commonOption
                 )
             }
-            is OnboardingViewEvents.OpenResetPasswordComplete    -> {
+            is OnboardingViewEvents.OpenResetPasswordComplete            -> {
                 supportFragmentManager.popBackStack(FRAGMENT_LOGIN_TAG, FragmentManager.POP_BACK_STACK_INCLUSIVE)
                 addLoginStageFragmentToBackstack(FtueAuthResetPasswordSuccessFragment::class.java)
             }
-            OnboardingViewEvents.OnResetPasswordComplete         -> {
-                supportFragmentManager.popBackStack(FRAGMENT_LOGIN_TAG, FragmentManager.POP_BACK_STACK_INCLUSIVE)
+            OnboardingViewEvents.OnResetPasswordComplete                 -> {
+                activity.popBackstack()
             }
-            is OnboardingViewEvents.OnSendEmailSuccess                         -> {
+            is OnboardingViewEvents.OnSendEmailSuccess                   -> {
                 openWaitForEmailVerification(viewEvents.email)
             }
-            is OnboardingViewEvents.OnSendMsisdnSuccess                        -> {
+            is OnboardingViewEvents.OnSendMsisdnSuccess                  -> {
                 // Pop the enter Msisdn Fragment
                 supportFragmentManager.popBackStack(FRAGMENT_REGISTRATION_STAGE_TAG, FragmentManager.POP_BACK_STACK_INCLUSIVE)
                 addRegistrationStageFragmentToBackstack(
@@ -207,10 +207,10 @@ class FtueAuthVariant(
                 )
             }
             is OnboardingViewEvents.Failure,
-            is OnboardingViewEvents.Loading                                    ->
+            is OnboardingViewEvents.Loading                              ->
                 // This is handled by the Fragments
                 Unit
-            OnboardingViewEvents.OpenUseCaseSelection                          -> {
+            OnboardingViewEvents.OpenUseCaseSelection                    -> {
                 activity.addFragmentToBackstack(
                         views.loginFragmentContainer,
                         FtueAuthUseCaseFragment::class.java,
