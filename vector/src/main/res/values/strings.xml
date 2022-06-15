@@ -2948,6 +2948,9 @@
     <string name="labs_enable_latex_maths">Enable LaTeX mathematics</string>
     <string name="restart_the_application_to_apply_changes">Restart the application for the change to take effect.</string>
 
+    <string name="labs_enable_msc3061_share_history">MSC3061: Sharing room keys for past messages</string>
+    <string name="labs_enable_msc3061_share_history_desc">When inviting in an encrypted room that is sharing history, encrypted history will be visible.</string>
+
     <!-- Poll -->
     <string name="create_poll_title">Create Poll</string>
     <string name="create_poll_question_title">Poll question or topic</string>
@@ -3013,7 +3016,7 @@
     <!--TODO delete-->
     <string name="location_in_background_missing_permission_dialog_title" tools:ignore="UnusedResources">Allow access</string>
     <!--TODO delete-->
-    <string name="location_in_background_missing_permission_dialog_content" xmlns:tools="http://schemas.android.com/tools" tools:ignore="UnusedResources">If you’d like to share your Live location, ${app_name} needs location access all the time when the app is in the background.\nWe will only access your location for the duration that you choose.</string>
+    <string xmlns:tools="http://schemas.android.com/tools" name="location_in_background_missing_permission_dialog_content" tools:ignore="UnusedResources">If you’d like to share your Live location, ${app_name} needs location access all the time when the app is in the background.\nWe will only access your location for the duration that you choose.</string>
     <string name="location_not_available_dialog_title">${app_name} could not access your location</string>
     <string name="location_not_available_dialog_content">${app_name} could not access your location. Please try again later.</string>
     <string name="location_share_external">Open with</string>
