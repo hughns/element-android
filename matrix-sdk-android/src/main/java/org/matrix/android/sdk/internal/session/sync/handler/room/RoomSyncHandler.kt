@@ -243,7 +243,7 @@ internal class RoomSyncHandler @Inject constructor(
                 if (event.eventId == null || event.stateKey == null || event.type == null) {
                     continue
                 }
-                val ageLocalTs = event.unsignedData?.age?.let { syncLocalTimestampMillis - it }
+                val ageLocalTs = event.unsignedData?.age?.let { syncLocalTimestampMillis - it } ?: syncLocalTimestampMillis
                 val eventEntity = event.toEntity(roomId, SendState.SYNCED, ageLocalTs).copyToRealmOrIgnore(realm, insertType)
                 Timber.v("## received state event ${event.type} and key ${event.stateKey}")
                 CurrentStateEventEntity.getOrCreate(realm, roomId, event.stateKey, event.type).apply {
@@ -305,7 +305,7 @@ internal class RoomSyncHandler @Inject constructor(
                 if (event.stateKey == null || event.type == null) {
                     return@forEach
                 }
-                val ageLocalTs = event.unsignedData?.age?.let { syncLocalTimestampMillis - it }
+                val ageLocalTs = event.unsignedData?.age?.let { syncLocalTimestampMillis - it } ?: syncLocalTimestampMillis
                 val eventEntity = event.toEntity(roomId, SendState.SYNCED, ageLocalTs).copyToRealmOrIgnore(realm, insertType)
                 CurrentStateEventEntity.getOrCreate(realm, roomId, event.stateKey, event.type).apply {
                     eventId = eventEntity.eventId
@@ -335,7 +335,7 @@ internal class RoomSyncHandler @Inject constructor(
             if (event.eventId == null || event.stateKey == null || event.type == null) {
                 continue
             }
-            val ageLocalTs = event.unsignedData?.age?.let { syncLocalTimestampMillis - it }
+            val ageLocalTs = event.unsignedData?.age?.let { syncLocalTimestampMillis - it } ?: syncLocalTimestampMillis
             val eventEntity = event.toEntity(roomId, SendState.SYNCED, ageLocalTs).copyToRealmOrIgnore(realm, insertType)
             CurrentStateEventEntity.getOrCreate(realm, roomId, event.stateKey, event.type).apply {
                 eventId = event.eventId
@@ -347,7 +347,7 @@ internal class RoomSyncHandler @Inject constructor(
             if (event.eventId == null || event.senderId == null || event.type == null) {
                 continue
             }
-            val ageLocalTs = event.unsignedData?.age?.let { syncLocalTimestampMillis - it }
+            val ageLocalTs = event.unsignedData?.age?.let { syncLocalTimestampMillis - it } ?: syncLocalTimestampMillis
             val eventEntity = event.toEntity(roomId, SendState.SYNCED, ageLocalTs).copyToRealmOrIgnore(realm, insertType)
             if (event.stateKey != null) {
                 CurrentStateEventEntity.getOrCreate(realm, roomId, event.stateKey, event.type).apply {
@@ -399,7 +399,10 @@ internal class RoomSyncHandler @Inject constructor(
         for (rawEvent in eventList) {
             // It's annoying roomId is not there, but lot of code rely on it.
             // And had to do it now as copy would delete all decryption results..
-            val event = rawEvent.copy(roomId = roomId)
+            val ageLocalTs = rawEvent.unsignedData?.age?.let { syncLocalTimestampMillis - it } ?: syncLocalTimestampMillis
+            val event = rawEvent.copy(roomId = roomId).also {
+                it.ageLocalTs = ageLocalTs
+            }
             if (event.eventId == null || event.senderId == null || event.type == null) {
                 continue
             }
@@ -421,7 +424,6 @@ internal class RoomSyncHandler @Inject constructor(
                 contentToInject = threadsAwarenessHandler.makeEventThreadAware(realm, roomId, event)
             }
 
-            val ageLocalTs = event.unsignedData?.age?.let { syncLocalTimestampMillis - it }
             val eventEntity = event.toEntity(roomId, SendState.SYNCED, ageLocalTs, contentToInject).copyToRealmOrIgnore(realm, insertType)
             if (event.stateKey != null) {
                 CurrentStateEventEntity.getOrCreate(realm, roomId, event.stateKey, event.type).apply {
