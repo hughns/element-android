@@ -65,10 +65,11 @@ class LocationSharingService : VectorService(), LocationTracker.Callback {
     var callback: Callback? = null
     private val jobs = mutableListOf<Job>()
     private val mainHandler by lazy { Handler(mainLooper) }
+    private var startInProgress = false
 
     override fun onCreate() {
         super.onCreate()
-        Timber.i("### LocationSharingService.onCreate")
+        Timber.i("onCreate")
 
         // Start tracking location
         locationTracker.addCallback(this)
@@ -76,9 +77,11 @@ class LocationSharingService : VectorService(), LocationTracker.Callback {
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
+        startInProgress = true
+
         val roomArgs = intent?.getParcelableExtra(EXTRA_ROOM_ARGS) as? RoomArgs
 
-        Timber.i("### LocationSharingService.onStartCommand. sessionId - roomId ${roomArgs?.sessionId} - ${roomArgs?.roomId}")
+        Timber.i("onStartCommand. sessionId - roomId ${roomArgs?.sessionId} - ${roomArgs?.roomId}")
 
         if (roomArgs != null) {
             // Show a sticky notification
@@ -90,6 +93,8 @@ class LocationSharingService : VectorService(), LocationTracker.Callback {
                 sendStartingLiveBeaconInfo(session, roomArgs)
             }
         }
+
+        startInProgress = false
 
         return START_STICKY
     }
@@ -115,20 +120,20 @@ class LocationSharingService : VectorService(), LocationTracker.Callback {
                     }
                 }
                 ?: run {
-                    Timber.w("### LocationSharingService.sendStartingLiveBeaconInfo error, no received beacon info id")
+                    Timber.w("sendStartingLiveBeaconInfo error, no received beacon info id")
                     tryToDestroyMe()
                 }
     }
 
-    private fun stopSharingLocation(roomId: String) {
-        Timber.i("### LocationSharingService.stopSharingLocation for $roomId")
-        removeRoomArgs(roomId)
+    private fun stopSharingLocation(beaconEventId: String) {
+        Timber.i("stopSharingLocation for beacon $beaconEventId")
+        removeRoomArgs(beaconEventId)
         tryToDestroyMe()
     }
 
     @Synchronized
     override fun onLocationUpdate(locationData: LocationData) {
-        Timber.i("### LocationSharingService.onLocationUpdate. Uncertainty: ${locationData.uncertainty}")
+        Timber.i("onLocationUpdate. Uncertainty: ${locationData.uncertainty}")
 
         // Emit location update to all rooms in which live location sharing is active
         roomArgsMap.forEach { item ->
@@ -160,8 +165,8 @@ class LocationSharingService : VectorService(), LocationTracker.Callback {
 
     @Synchronized
     private fun tryToDestroyMe() {
-        if (roomArgsMap.isEmpty()) {
-            Timber.i("### LocationSharingService. Destroying self, time is up for all rooms")
+        if (startInProgress.not() && roomArgsMap.isEmpty()) {
+            Timber.i("Destroying self, time is up for all rooms")
             destroyMe()
         }
     }
@@ -175,32 +180,30 @@ class LocationSharingService : VectorService(), LocationTracker.Callback {
 
     override fun onDestroy() {
         super.onDestroy()
-        Timber.i("### LocationSharingService.onDestroy")
         destroyMe()
     }
 
     @Synchronized
     private fun addRoomArgs(beaconEventId: String, roomArgs: RoomArgs) {
+        Timber.i("adding roomArgs for beaconEventId: $beaconEventId")
         roomArgsMap[beaconEventId] = roomArgs
     }
 
     @Synchronized
-    private fun removeRoomArgs(roomId: String) {
-        val beaconIds = roomArgsMap
-                .filter { it.value.roomId == roomId }
-                .map { it.key }
-        beaconIds.forEach { roomArgsMap.remove(it) }
+    private fun removeRoomArgs(beaconEventId: String) {
+        Timber.i("removing roomArgs for beaconEventId: $beaconEventId")
+        roomArgsMap.remove(beaconEventId)
     }
 
-    private fun listenForLiveSummaryChanges(roomId: String, eventId: String) {
+    private fun listenForLiveSummaryChanges(roomId: String, beaconEventId: String) {
         activeSessionHolder
                 .getSafeActiveSession()
                 ?.let { session ->
                     mainHandler.post {
-                        val job = getLiveLocationShareSummaryUseCase.execute(roomId, eventId)
+                        val job = getLiveLocationShareSummaryUseCase.execute(roomId, beaconEventId)
                                 .distinctUntilChangedBy { it.isActive }
                                 .filter { it.isActive == false }
-                                .onEach { stopSharingLocation(roomId) }
+                                .onEach { stopSharingLocation(beaconEventId) }
                                 .launchIn(session.coroutineScope)
                         jobs.add(job)
                     }
